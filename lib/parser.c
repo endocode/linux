@@ -167,6 +167,40 @@ int match_int(substring_t *s, int *result)
 EXPORT_SYMBOL(match_int);
 
 /**
+ * match_uint: - scan a decimal representation of an unsigned integer from a
+ * substring_t
+ * @s: substring_t to be scanned
+ * @result: resulting unsigned integer on success
+ *
+ * Description: Attempts to parse the &substring_t @s as a unsigned decimal
+ * integer. On success, sets @result to the unsigned integer represented by
+ * the string and returns 0.
+ * Returns -ENOMEM, -EINVAL, or -ERANGE on failure.
+ */
+int match_uint(substring_t *s, unsigned int *result)
+{
+	char *endp;
+	char *buf;
+	int ret;
+	unsigned int val;
+	size_t len = s->to - s->from;
+
+	buf = kmalloc(len + 1, GFP_KERNEL);
+	if (!buf)
+		return -ENOMEM;
+	memcpy(buf, s->from, len);
+	buf[len] = '\0';
+
+	ret = kstrtouint(buf, 0, &val);
+	if (ret == 0)
+		*result = val;
+	kfree(buf);
+	pr_info("match_uint: ret=%d val=%u\n", ret, val);
+	return ret;
+}
+EXPORT_SYMBOL(match_uint);
+
+/**
  * match_octal: - scan an octal representation of an integer from a substring_t
  * @s: substring_t to be scanned
  * @result: resulting integer on success
