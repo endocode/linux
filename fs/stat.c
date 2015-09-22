@@ -14,6 +14,7 @@
 #include <linux/security.h>
 #include <linux/syscalls.h>
 #include <linux/pagemap.h>
+#include <linux/mount.h>
 
 #include <asm/uaccess.h>
 #include <asm/unistd.h>
@@ -25,8 +26,15 @@ void generic_fillattr(struct vfsmount *mnt, struct inode *inode,
 	stat->ino = inode->i_ino;
 	stat->mode = inode->i_mode;
 	stat->nlink = inode->i_nlink;
-	stat->uid = inode->i_uid;
-	stat->gid = inode->i_gid;
+	if (mnt && mnt->user_ns &&
+		(capable_wrt_inode_uidgid(inode, CAP_SETUID) ||
+		 capable_wrt_inode_uidgid(inode, CAP_SETGID))) {
+		stat->uid = make_kuid(mnt->user_ns, inode->i_uid.val);
+		stat->gid = make_kgid(mnt->user_ns, inode->i_gid.val);
+	} else {
+		stat->uid = inode->i_uid;
+		stat->gid = inode->i_gid;
+	}
 	stat->rdev = inode->i_rdev;
 	stat->size = i_size_read(inode);
 	stat->atime = inode->i_atime;
@@ -384,8 +392,20 @@ static long cp_new_stat64(struct kstat *stat, struct stat64 __user *statbuf)
 #endif
 	tmp.st_mode = stat->mode;
 	tmp.st_nlink = stat->nlink;
-	tmp.st_uid = from_kuid_munged(current_user_ns(), stat->uid);
-	tmp.st_gid = from_kgid_munged(current_user_ns(), stat->gid);
+
+	/* remap st_uid & st_gid only if both are previously not mapped */
+	if (!kuid_has_mapping(current_user_ns(), stat->uid)) {
+		pr_info("%s: kuid has no mapping\n", __func__);
+		tmp.st_uid = from_kuid_munged(current_user_ns(), stat->uid);
+	}
+	else
+		pr_info("%s: kuid already has a mapping\n", __func__);
+	if (!kgid_has_mapping(current_user_ns(), stat->gid)) {
+		tmp.st_gid = from_kgid_munged(current_user_ns(), stat->gid);
+		pr_info("%s: kgid has no mapping\n", __func__);
+	}
+	else
+		pr_info("%s: kuid already has a mapping\n", __func__);
 	tmp.st_atime = stat->atime.tv_sec;
 	tmp.st_atime_nsec = stat->atime.tv_nsec;
 	tmp.st_mtime = stat->mtime.tv_sec;
