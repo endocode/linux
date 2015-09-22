@@ -2046,7 +2046,7 @@ static int loopback_parse_options(char *options, int *apply_shift)
 {
         substring_t args[MAX_OPT_ARGS];
         char *origin, *p;
-        int idshift = 0;
+        int idshift = 0, id_optval = 0;
         int ret = 0;
 
         if (!options)
@@ -2066,12 +2066,18 @@ static int loopback_parse_options(char *options, int *apply_shift)
 
                 token = match_token(p, tokens, args);
                 switch (token) {
-                case Opt_vfs_uidshift:
-                        idshift = 1;
-                        break;
-                case Opt_vfs_gidshift:
-                        idshift = 1;
-                        break;
+		case Opt_vfs_uidshift:
+			if (match_int(&args[0], &id_optval))
+				break;
+			if (id_optval)
+				idshift = 1;
+			break;
+		case Opt_vfs_gidshift:
+			if (match_int(&args[0], &id_optval))
+				break;
+			if (id_optval)
+				idshift = 1;
+			break;
                 default:
                         break;
                 }
