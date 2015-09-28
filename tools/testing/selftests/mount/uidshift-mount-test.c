@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+#define _FILE_OFFSET_BITS 64
 #include <sched.h>
 #include <stdio.h>
 #include <errno.h>
@@ -8,6 +9,7 @@
 #include <sys/prctl.h>
 #include <sys/wait.h>
 #include <sys/vfs.h>
+#include <sys/stat.h>
 #include <sys/statvfs.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -17,6 +19,8 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stddef.h>
+#include <dirent.h>
+#include <fnmatch.h>
 #include <sys/syscall.h>
 #include <sys/eventfd.h>
 #include <linux/sched.h>
@@ -31,6 +35,8 @@ static int efd;
 static int efd_userns_child;
 static uid_t arg_uid_shift = UID_INVALID;
 static uid_t arg_uid_range = 0x10000U;
+static char *procpath = "/proc";
+static const char selfpath[] = "/proc/self";
 
 static int vmaybe_write_file(bool enoent_ok, char *filename, char *fmt, va_list ap)
 {
@@ -165,9 +171,102 @@ static int update_uid_gid(void)
         return 0;
 }
 
+static int print_stat_file(struct stat *statbuf)
+{
+	printf("I-node number:            %ld\n", (long) statbuf->st_ino);
+
+	printf("Mode:                     %lo (octal)\n",
+	   (unsigned long) statbuf->st_mode);
+
+	printf("Link count:               %ld\n", (long) statbuf->st_nlink);
+	printf("Ownership:                UID=%ld   GID=%ld\n",
+	   (long) statbuf->st_uid, (long) statbuf->st_gid);
+
+	printf("Preferred I/O block size: %ld bytes\n",
+	   (long) statbuf->st_blksize);
+	printf("File size:                %lld bytes\n",
+	   (long long) statbuf->st_size);
+	printf("Blocks allocated:         %lld\n",
+	   (long long) statbuf->st_blocks);
+
+	return 0;
+}
+
+static int read_proc_dir(const char *obj)
+{
+	struct stat statbuf;
+	DIR *pdir;
+	struct dirent *dirent;
+	char dirobj[PATH_MAX];
+	int rv = 0;
+
+	if (lstat(obj, &statbuf) < 0) {
+		if (errno != EACCES) {
+			perror("lstat");
+			return 0;
+		}
+		return 0;
+	}
+
+	/* skip symlinks to avoid loops */
+	if (S_ISLNK(statbuf.st_mode) && strcmp(obj, selfpath) != 0)
+		return 0;
+
+	/* it's not a directory, do stat on it. */
+	if (!S_ISDIR(statbuf.st_mode)) {
+		if (!S_ISREG(statbuf.st_mode))
+			return 0;
+
+		/* skip write-only ones */
+		if ((statbuf.st_mode & S_IRUSR) == 0 &&
+		    (statbuf.st_mode & S_IWUSR) != 0) {
+			fprintf(stderr, "%s is write-only.", obj);
+			return 0;
+		}
+
+		return print_stat_file(&statbuf);
+	}
+
+	/* skip /proc/irq directory */
+	if (strcmp(obj, "/proc/irq") == 0)
+		return 0;
+
+	pdir = opendir(obj);
+	if (!pdir) {
+		perror("opendir");
+		return 0;
+	}
+
+	for (dirent = readdir(pdir); dirent != NULL; dirent = readdir(pdir)) {
+		/* ignore ".", "..", "kcore" and "/proc/<pid>" */
+		if ((strcmp(dirent->d_name, ".") == 0) ||
+		    (strcmp(dirent->d_name, "..") == 0) ||
+		    (strcmp(dirent->d_name, "kcore") == 0) ||
+		    (!fnmatch("[0-9]*", dirent->d_name, FNM_PATHNAME) &&
+		     (strcmp(obj, procpath) == 0)))
+			continue;
+
+		/* recursively call this to read all entries */
+		snprintf(dirobj, PATH_MAX,
+			 "%s/%s", obj, dirent->d_name);
+		rv += read_proc_dir(dirobj);
+	}
+
+	if (pdir)
+		closedir(pdir);
+
+	return rv;
+}
+
 static int child_test_filesystems(void)
 {
-        /* TODO stat proc inode entries... */
+	int ret;
+
+        /* stat proc inode entries... */
+	if ((ret = read_proc_dir("/proc")) < 0) {
+		perror("child_test_filesystems");
+		return ret;
+	}
 
         return 0;
 }
