@@ -14,6 +14,7 @@
 #include <linux/security.h>
 #include <linux/syscalls.h>
 #include <linux/pagemap.h>
+#include <linux/mount.h>
 
 #include <asm/uaccess.h>
 #include <asm/unistd.h>
@@ -25,8 +26,15 @@ void generic_fillattr(struct vfsmount *mnt, struct inode *inode,
 	stat->ino = inode->i_ino;
 	stat->mode = inode->i_mode;
 	stat->nlink = inode->i_nlink;
-	stat->uid = inode->i_uid;
-	stat->gid = inode->i_gid;
+	if (mnt && mnt->user_ns &&
+		kuid_has_mapping(mnt->user_ns, inode->i_uid) &&
+		kgid_has_mapping(mnt->user_ns, inode->i_gid)) {
+		stat->uid = make_kuid(mnt->user_ns, inode->i_uid.val);
+		stat->gid = make_kgid(mnt->user_ns, inode->i_gid.val);
+	} else {
+		stat->uid = inode->i_uid;
+		stat->gid = inode->i_gid;
+	}
 	stat->rdev = inode->i_rdev;
 	stat->size = i_size_read(inode);
 	stat->atime = inode->i_atime;
