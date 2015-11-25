@@ -576,6 +576,11 @@ struct posix_acl;
 #define IOP_LOOKUP	0x0002
 #define IOP_NOFOLLOW	0x0004
 
+#ifdef CONFIG_VFS_BINDMOUNT_SHIFT_UIDGID
+typedef kuid_t vuid_t;
+typedef kuid_t vgid_t;
+#endif
+
 /*
  * Keep mostly read-only and often accessed (especially for
  * the RCU path lookup and 'stat' data) fields at the beginning
@@ -584,13 +589,8 @@ struct posix_acl;
 struct inode {
 	umode_t			i_mode;
 	unsigned short		i_opflags;
-#ifdef CONFIG_VFS_BINDMOUNT_SHIFT_UIDGID
-	vuid_t			i_uid;
-	vgid_t			i_gid;
-#else
 	kuid_t                  i_uid;
 	kgid_t                  i_gid;
-#endif
 	unsigned int		i_flags;
 
 #ifdef CONFIG_FS_POSIX_ACL
@@ -780,34 +780,29 @@ static inline void i_size_write(struct inode *inode, loff_t i_size)
  * in the filesystem.
  */
 
-#ifdef CONFIG_VFS_BINDMOUNT_SHIFT_UIDGID
-
 /* VFS kuid_t into on-disk inode uid_t */
 static inline uid_t i_uid_read(const struct inode *inode)
 {
-	return from_kuid(&init_user_ns, VUID_TO_KUID(inode->i_uid));
+	return from_kuid(&init_user_ns, inode->i_uid);
 }
 
 /* VFS kgid_t into on-disk inode gid_t */
 static inline gid_t i_gid_read(const struct inode *inode)
 {
-	return from_kgid(&init_user_ns, VGID_TO_KGID(inode->i_gid));
+	return from_kgid(&init_user_ns, inode->i_gid);
 }
 
 static inline void i_uid_write(struct inode *inode, uid_t uid)
 {
-	kuid_t kuid;
-	kuid = make_kuid(&init_user_ns, uid);
-	inode->i_uid = KUID_TO_VUID(kuid);
+	inode->i_uid = make_kuid(&init_user_ns, uid);
 }
 
 static inline void i_gid_write(struct inode *inode, gid_t gid)
 {
-	kgid_t kgid;
-	kgid = make_kgid(&init_user_ns, gid);
-	inode->i_gid = KGID_TO_VGID(kgid);
+	inode->i_gid = make_kgid(&init_user_ns, gid);
 }
 
+#ifdef CONFIG_VFS_BINDMOUNT_SHIFT_UIDGID
 /* On-disk inode uid_t into VFS kuid_t format */
 extern kuid_t vfs_i_uid_read(const struct inode *inode,
 			     const struct vfsmount *mnt);
@@ -825,26 +820,6 @@ extern void vfs_i_gid_write(struct inode *inode,
 			    const struct vfsmount *mnt, gid_t gid);
 
 #else
-static inline uid_t i_uid_read(const struct inode *inode)
-{
-	return from_kuid(&init_user_ns, inode->i_uid);
-}
-
-static inline gid_t i_gid_read(const struct inode *inode)
-{
-	return from_kgid(&init_user_ns, inode->i_gid);
-}
-
-static inline void i_uid_write(struct inode *inode, uid_t uid)
-{
-	inode->i_uid = make_kuid(&init_user_ns, uid);
-}
-
-static inline void i_gid_write(struct inode *inode, gid_t gid)
-{
-	inode->i_gid = make_kgid(&init_user_ns, gid);
-}
-
 /* On-disk inode uid_t into VFS kuid_t format */
 static inline kuid_t vfs_i_uid_read(const struct inode *inode,
 				    const struct vfsmount *mnt)

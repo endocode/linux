@@ -555,7 +555,7 @@ static int shmem_getattr(struct vfsmount *mnt, struct dentry *dentry,
 		shmem_recalc_inode(inode);
 		spin_unlock(&info->lock);
 	}
-	generic_fillattr(inode, stat);
+	generic_fillattr(mnt, inode, stat);
 	return 0;
 }
 

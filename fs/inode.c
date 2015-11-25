@@ -543,7 +543,7 @@ void vfs_i_uid_write(struct inode *inode,
 		user_ns = mnt->user_ns;
 
 	kuid = make_kuid(user_ns, uid);
-	inode->i_uid = KUID_TO_VUID(kuid);
+	inode->i_uid = kuid;
 }
 
 /* Update inode kgid_t from on-disk gid_t */
@@ -557,7 +557,7 @@ void vfs_i_gid_write(struct inode *inode,
 		user_ns = mnt->user_ns;
 
 	kgid = make_kgid(user_ns, gid);
-	inode->i_gid = KGID_TO_VGID(kgid);
+	inode->i_gid = kgid;
 }
 
 #endif /* CONFIG_VFS_BINDMOUNT_SHIFT_UIDGID */
