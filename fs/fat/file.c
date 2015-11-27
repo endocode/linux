@@ -360,8 +360,8 @@ static int fat_allow_set_time(struct msdos_sb_info *sbi, struct inode *inode)
 {
 	umode_t allow_utime = sbi->options.allow_utime;
 
-	if (!uid_eq(current_fsuid(), inode->i_uid)) {
-		if (in_group_p(inode->i_gid))
+	if (!uid_eq(current_fsuid(), VUID_TO_KUID(inode->i_uid))) {
+		if (in_group_p(VGID_TO_KGID(inode->i_gid)))
 			allow_utime >>= 3;
 		if (allow_utime & MAY_WRITE)
 			return 1;

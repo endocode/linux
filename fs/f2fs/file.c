@@ -635,9 +635,9 @@ static void __setattr_copy(struct inode *inode, const struct iattr *attr)
 	unsigned int ia_valid = attr->ia_valid;
 
 	if (ia_valid & ATTR_UID)
-		inode->i_uid = attr->ia_uid;
+		inode->i_uid = KUID_TO_VUID(attr->ia_uid);
 	if (ia_valid & ATTR_GID)
-		inode->i_gid = attr->ia_gid;
+		inode->i_gid = KGID_TO_VGID(attr->ia_gid);
 	if (ia_valid & ATTR_ATIME)
 		inode->i_atime = timespec_trunc(attr->ia_atime,
 						inode->i_sb->s_time_gran);
@@ -650,7 +650,7 @@ static void __setattr_copy(struct inode *inode, const struct iattr *attr)
 	if (ia_valid & ATTR_MODE) {
 		umode_t mode = attr->ia_mode;
 
-		if (!in_group_p(inode->i_gid) && !capable(CAP_FSETID))
+		if (!in_group_p(VGID_TO_KGID(inode->i_gid)) && !capable(CAP_FSETID))
 			mode &= ~S_ISGID;
 		set_acl_inode(fi, mode);
 	}

@@ -188,11 +188,11 @@ static void hfsplus_get_perms(struct inode *inode,
 
 	i_uid_write(inode, be32_to_cpu(perms->owner));
 	if (!i_uid_read(inode) && !mode)
-		inode->i_uid = sbi->uid;
+		inode->i_uid = KUID_TO_VUID(sbi->uid);
 
 	i_gid_write(inode, be32_to_cpu(perms->group));
 	if (!i_gid_read(inode) && !mode)
-		inode->i_gid = sbi->gid;
+		inode->i_gid = KGID_TO_VGID(sbi->gid);
 
 	if (dir) {
 		mode = mode ? (mode & S_IALLUGO) : (S_IRWXUGO & ~(sbi->umask));
@@ -367,8 +367,8 @@ struct inode *hfsplus_new_inode(struct super_block *sb, umode_t mode)
 
 	inode->i_ino = sbi->next_cnid++;
 	inode->i_mode = mode;
-	inode->i_uid = current_fsuid();
-	inode->i_gid = current_fsgid();
+	inode->i_uid = KUID_TO_VUID(current_fsuid());
+	inode->i_gid = KGID_TO_VGID(current_fsgid());
 	set_nlink(inode, 1);
 	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME_SEC;
 

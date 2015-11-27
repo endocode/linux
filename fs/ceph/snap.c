@@ -531,8 +531,8 @@ void ceph_queue_cap_snap(struct ceph_inode_info *ci)
 	capsnap->dirty = dirty;
 
 	capsnap->mode = inode->i_mode;
-	capsnap->uid = inode->i_uid;
-	capsnap->gid = inode->i_gid;
+	capsnap->uid = VUID_TO_KUID(inode->i_uid);
+	capsnap->gid = VGID_TO_KGID(inode->i_gid);
 
 	if (dirty & CEPH_CAP_XATTR_EXCL) {
 		__ceph_build_xattrs_blob(ci);

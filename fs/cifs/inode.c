@@ -164,8 +164,8 @@ cifs_fattr_to_inode(struct inode *inode, struct cifs_fattr *fattr)
 	inode->i_ctime = fattr->cf_ctime;
 	inode->i_rdev = fattr->cf_rdev;
 	cifs_nlink_fattr_to_inode(inode, fattr);
-	inode->i_uid = fattr->cf_uid;
-	inode->i_gid = fattr->cf_gid;
+	inode->i_uid = KUID_TO_VUID(fattr->cf_uid);
+	inode->i_gid = KGID_TO_VGID(fattr->cf_gid);
 
 	/* if dynperm is set, don't clobber existing mode */
 	if (inode->i_state & I_NEW ||
@@ -1013,8 +1013,8 @@ iget_no_retry:
 		set_nlink(inode, 2);
 		inode->i_op = &cifs_ipc_inode_ops;
 		inode->i_fop = &simple_dir_operations;
-		inode->i_uid = cifs_sb->mnt_uid;
-		inode->i_gid = cifs_sb->mnt_gid;
+		inode->i_uid = KUID_TO_VUID(cifs_sb->mnt_uid);
+		inode->i_gid = KGID_TO_VGID(cifs_sb->mnt_gid);
 		spin_unlock(&inode->i_lock);
 	} else if (rc) {
 		iget_failed(inode);
@@ -1377,7 +1377,7 @@ cifs_mkdir_qinfo(struct inode *parent, struct dentry *dentry, umode_t mode,
 		if (cifs_sb->mnt_cifs_flags & CIFS_MOUNT_SET_UID) {
 			args.uid = current_fsuid();
 			if (parent->i_mode & S_ISGID)
-				args.gid = parent->i_gid;
+				args.gid = VGID_TO_KGID(parent->i_gid);
 			else
 				args.gid = current_fsgid();
 		} else {
@@ -1397,11 +1397,11 @@ cifs_mkdir_qinfo(struct inode *parent, struct dentry *dentry, umode_t mode,
 			inode->i_mode = (mode | S_IFDIR);
 
 		if (cifs_sb->mnt_cifs_flags & CIFS_MOUNT_SET_UID) {
-			inode->i_uid = current_fsuid();
+			inode->i_uid = KUID_TO_VUID(current_fsuid());
 			if (inode->i_mode & S_ISGID)
 				inode->i_gid = parent->i_gid;
 			else
-				inode->i_gid = current_fsgid();
+				inode->i_gid = KGID_TO_VGID(current_fsgid());
 		}
 	}
 	d_instantiate(dentry, inode);

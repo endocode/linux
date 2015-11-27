@@ -544,8 +544,8 @@ got:
 	mark_buffer_dirty(bh2);
 	if (test_opt(sb, GRPID)) {
 		inode->i_mode = mode;
-		inode->i_uid = current_fsuid();
-		inode->i_gid = dir->i_gid;
+		inode->i_uid = KUID_TO_VUID(current_fsuid());
+		inode->i_gid = KGID_TO_VGID(dir->i_gid);
 	} else
 		inode_init_owner(inode, dir, mode);
 

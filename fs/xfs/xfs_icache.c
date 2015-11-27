@@ -1193,11 +1193,11 @@ xfs_inode_match_id(
 	struct xfs_eofblocks	*eofb)
 {
 	if ((eofb->eof_flags & XFS_EOF_FLAGS_UID) &&
-	    !uid_eq(VFS_I(ip)->i_uid, eofb->eof_uid))
+	    !uid_eq(VUID_TO_KUID(VFS_I(ip)->i_uid), eofb->eof_uid))
 		return 0;
 
 	if ((eofb->eof_flags & XFS_EOF_FLAGS_GID) &&
-	    !gid_eq(VFS_I(ip)->i_gid, eofb->eof_gid))
+	    !gid_eq(VGID_TO_KGID(VFS_I(ip)->i_gid), eofb->eof_gid))
 		return 0;
 
 	if ((eofb->eof_flags & XFS_EOF_FLAGS_PRID) &&
@@ -1217,11 +1217,11 @@ xfs_inode_match_id_union(
 	struct xfs_eofblocks	*eofb)
 {
 	if ((eofb->eof_flags & XFS_EOF_FLAGS_UID) &&
-	    uid_eq(VFS_I(ip)->i_uid, eofb->eof_uid))
+	    uid_eq(VUID_TO_KUID(VFS_I(ip)->i_uid), eofb->eof_uid))
 		return 1;
 
 	if ((eofb->eof_flags & XFS_EOF_FLAGS_GID) &&
-	    gid_eq(VFS_I(ip)->i_gid, eofb->eof_gid))
+	    gid_eq(VGID_TO_KGID(VFS_I(ip)->i_gid), eofb->eof_gid))
 		return 1;
 
 	if ((eofb->eof_flags & XFS_EOF_FLAGS_PRID) &&
@@ -1332,7 +1332,7 @@ xfs_inode_free_quota_eofblocks(
 	if (XFS_IS_UQUOTA_ENFORCED(ip->i_mount)) {
 		dq = xfs_inode_dquot(ip, XFS_DQ_USER);
 		if (dq && xfs_dquot_lowsp(dq)) {
-			eofb.eof_uid = VFS_I(ip)->i_uid;
+			eofb.eof_uid = VUID_TO_KUID(VFS_I(ip)->i_uid);
 			eofb.eof_flags |= XFS_EOF_FLAGS_UID;
 			scan = 1;
 		}
@@ -1341,7 +1341,7 @@ xfs_inode_free_quota_eofblocks(
 	if (XFS_IS_GQUOTA_ENFORCED(ip->i_mount)) {
 		dq = xfs_inode_dquot(ip, XFS_DQ_GROUP);
 		if (dq && xfs_dquot_lowsp(dq)) {
-			eofb.eof_gid = VFS_I(ip)->i_gid;
+			eofb.eof_gid = VGID_TO_KGID(VFS_I(ip)->i_gid);
 			eofb.eof_flags |= XFS_EOF_FLAGS_GID;
 			scan = 1;
 		}

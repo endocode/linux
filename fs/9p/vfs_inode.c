@@ -1169,12 +1169,12 @@ v9fs_stat2inode(struct p9_wstat *stat, struct inode *inode,
 	inode->i_mtime.tv_sec = stat->mtime;
 	inode->i_ctime.tv_sec = stat->mtime;
 
-	inode->i_uid = v9ses->dfltuid;
-	inode->i_gid = v9ses->dfltgid;
+	inode->i_uid = KUID_TO_VUID(v9ses->dfltuid);
+	inode->i_gid = KGID_TO_VGID(v9ses->dfltgid);
 
 	if (v9fs_proto_dotu(v9ses)) {
-		inode->i_uid = stat->n_uid;
-		inode->i_gid = stat->n_gid;
+		inode->i_uid = KUID_TO_VUID(stat->n_uid);
+		inode->i_gid = KGID_TO_VGID(stat->n_gid);
 	}
 	if ((S_ISREG(inode->i_mode)) || (S_ISDIR(inode->i_mode))) {
 		if (v9fs_proto_dotu(v9ses) && (stat->extension[0] != '\0')) {

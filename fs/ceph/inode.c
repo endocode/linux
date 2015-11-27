@@ -728,12 +728,16 @@ static int fill_inode(struct inode *inode, struct page *locked_page,
 
 	if ((new_version || (new_issued & CEPH_CAP_AUTH_SHARED)) &&
 	    (issued & CEPH_CAP_AUTH_EXCL) == 0) {
+		kuid_t kuid;
+		kgid_t kgid;
 		inode->i_mode = le32_to_cpu(info->mode);
-		inode->i_uid = make_kuid(&init_user_ns, le32_to_cpu(info->uid));
-		inode->i_gid = make_kgid(&init_user_ns, le32_to_cpu(info->gid));
+		kuid = make_kuid(&init_user_ns, le32_to_cpu(info->uid));
+		inode->i_uid = KUID_TO_VUID(kuid);
+		kgid = make_kgid(&init_user_ns, le32_to_cpu(info->gid));
+		inode->i_gid = KGID_TO_VGID(kgid);
 		dout("%p mode 0%o uid.gid %d.%d\n", inode, inode->i_mode,
-		     from_kuid(&init_user_ns, inode->i_uid),
-		     from_kgid(&init_user_ns, inode->i_gid));
+		     from_kuid(&init_user_ns, VUID_TO_KUID(inode->i_uid)),
+		     from_kgid(&init_user_ns, VGID_TO_KGID(inode->i_gid)));
 	}
 
 	if ((new_version || (new_issued & CEPH_CAP_LINK_SHARED)) &&
@@ -1818,13 +1822,13 @@ int ceph_setattr(struct dentry *dentry, struct iattr *attr)
 
 	if (ia_valid & ATTR_UID) {
 		dout("setattr %p uid %d -> %d\n", inode,
-		     from_kuid(&init_user_ns, inode->i_uid),
+		     from_kuid(&init_user_ns, VUID_TO_KUID(inode->i_uid)),
 		     from_kuid(&init_user_ns, attr->ia_uid));
 		if (issued & CEPH_CAP_AUTH_EXCL) {
-			inode->i_uid = attr->ia_uid;
+			inode->i_uid = KUID_TO_VUID(attr->ia_uid);
 			dirtied |= CEPH_CAP_AUTH_EXCL;
 		} else if ((issued & CEPH_CAP_AUTH_SHARED) == 0 ||
-			   !uid_eq(attr->ia_uid, inode->i_uid)) {
+			   !uid_eq(attr->ia_uid, VUID_TO_KUID(inode->i_uid))) {
 			req->r_args.setattr.uid = cpu_to_le32(
 				from_kuid(&init_user_ns, attr->ia_uid));
 			mask |= CEPH_SETATTR_UID;
@@ -1833,13 +1837,13 @@ int ceph_setattr(struct dentry *dentry, struct iattr *attr)
 	}
 	if (ia_valid & ATTR_GID) {
 		dout("setattr %p gid %d -> %d\n", inode,
-		     from_kgid(&init_user_ns, inode->i_gid),
+		     from_kgid(&init_user_ns, VGID_TO_KGID(inode->i_gid)),
 		     from_kgid(&init_user_ns, attr->ia_gid));
 		if (issued & CEPH_CAP_AUTH_EXCL) {
-			inode->i_gid = attr->ia_gid;
+			inode->i_gid = KGID_TO_VGID(attr->ia_gid);
 			dirtied |= CEPH_CAP_AUTH_EXCL;
 		} else if ((issued & CEPH_CAP_AUTH_SHARED) == 0 ||
-			   !gid_eq(attr->ia_gid, inode->i_gid)) {
+			   !gid_eq(attr->ia_gid, VGID_TO_KGID(inode->i_gid))) {
 			req->r_args.setattr.gid = cpu_to_le32(
 				from_kgid(&init_user_ns, attr->ia_gid));
 			mask |= CEPH_SETATTR_GID;

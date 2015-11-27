@@ -1181,8 +1181,8 @@ static int __send_cap(struct ceph_mds_client *mdsc, struct ceph_cap *cap,
 	mtime = inode->i_mtime;
 	atime = inode->i_atime;
 	time_warp_seq = ci->i_time_warp_seq;
-	uid = inode->i_uid;
-	gid = inode->i_gid;
+	uid = VUID_TO_KUID(inode->i_uid);
+	gid = VGID_TO_KGID(inode->i_gid);
 	mode = inode->i_mode;
 
 	if (flushing & CEPH_CAP_XATTR_EXCL) {
@@ -2828,12 +2828,17 @@ static void handle_cap_grant(struct ceph_mds_client *mdsc,
 
 	if ((newcaps & CEPH_CAP_AUTH_SHARED) &&
 	    (issued & CEPH_CAP_AUTH_EXCL) == 0) {
+		kuid_t kuid;
+		kgid_t kgid;
+
 		inode->i_mode = le32_to_cpu(grant->mode);
-		inode->i_uid = make_kuid(&init_user_ns, le32_to_cpu(grant->uid));
-		inode->i_gid = make_kgid(&init_user_ns, le32_to_cpu(grant->gid));
+		kuid = make_kuid(&init_user_ns, le32_to_cpu(grant->uid));
+		inode->i_uid = KUID_TO_VUID(kuid);
+		kgid = make_kgid(&init_user_ns, le32_to_cpu(grant->gid));
+		inode->i_gid = KGID_TO_VGID(kgid);
 		dout("%p mode 0%o uid.gid %d.%d\n", inode, inode->i_mode,
-		     from_kuid(&init_user_ns, inode->i_uid),
-		     from_kgid(&init_user_ns, inode->i_gid));
+		     from_kuid(&init_user_ns, VUID_TO_KUID(inode->i_uid)),
+		     from_kgid(&init_user_ns, VGID_TO_KGID(inode->i_gid)));
 	}
 
 	if ((newcaps & CEPH_CAP_AUTH_SHARED) &&
