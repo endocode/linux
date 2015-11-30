@@ -1093,8 +1093,8 @@ ffs_sb_make_inode(struct super_block *sb, void *data,
 
 		inode->i_ino	 = get_next_ino();
 		inode->i_mode    = perms->mode;
-		inode->i_uid     = perms->uid;
-		inode->i_gid     = perms->gid;
+		inode->i_uid     = KUID_TO_VUID(perms->uid);
+		inode->i_gid     = KGID_TO_VGID(perms->gid);
 		inode->i_atime   = current_time;
 		inode->i_mtime   = current_time;
 		inode->i_ctime   = current_time;

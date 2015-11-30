@@ -1235,7 +1235,7 @@ int ll_setattr_raw(struct dentry *dentry, struct iattr *attr, bool hsm_import)
 
 	/* POSIX: check before ATTR_*TIME_SET set (from inode_change_ok) */
 	if (attr->ia_valid & TIMES_SET_FLAGS) {
-		if ((!uid_eq(current_fsuid(), inode->i_uid)) &&
+		if ((!uid_eq(current_fsuid(), VUID_TO_KUID(inode->i_uid))) &&
 		    !capable(CFS_CAP_FOWNER))
 			return -EPERM;
 	}
@@ -1512,6 +1512,8 @@ void ll_update_inode(struct inode *inode, struct lustre_md *md)
 	struct mdt_body *body = md->body;
 	struct lov_stripe_md *lsm = md->lsm;
 	struct ll_sb_info *sbi = ll_i2sbi(inode);
+	kuid_t kuid;
+	kgid_t kgid;
 
 	LASSERT((lsm != NULL) == ((body->valid & OBD_MD_FLEASIZE) != 0));
 	if (lsm != NULL) {
@@ -1570,10 +1572,12 @@ void ll_update_inode(struct inode *inode, struct lustre_md *md)
 				       LL_MAX_BLKSIZE_BITS);
 	else
 		inode->i_blkbits = inode->i_sb->s_blocksize_bits;
+	kuid = make_kuid(&init_user_ns, body->uid);
+	kgid = make_kgid(&init_user_ns, body->gid);
 	if (body->valid & OBD_MD_FLUID)
-		inode->i_uid = make_kuid(&init_user_ns, body->uid);
+		inode->i_uid = KUID_TO_VUID(kuid);
 	if (body->valid & OBD_MD_FLGID)
-		inode->i_gid = make_kgid(&init_user_ns, body->gid);
+		inode->i_gid = KGID_TO_VGID(kgid);
 	if (body->valid & OBD_MD_FLFLAGS)
 		inode->i_flags = ll_ext_to_inode_flags(body->flags);
 	if (body->valid & OBD_MD_FLNLINK)

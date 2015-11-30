@@ -90,8 +90,8 @@ static int vvp_attr_get(const struct lu_env *env, struct cl_object *obj,
 	attr->cat_atime = inode->i_atime.tv_sec;
 	attr->cat_ctime = inode->i_ctime.tv_sec;
 	attr->cat_blocks = inode->i_blocks;
-	attr->cat_uid = from_kuid(&init_user_ns, inode->i_uid);
-	attr->cat_gid = from_kgid(&init_user_ns, inode->i_gid);
+	attr->cat_uid = from_kuid(&init_user_ns, VUID_TO_KUID(inode->i_uid));
+	attr->cat_gid = from_kgid(&init_user_ns, VGID_TO_KGID(inode->i_gid));
 	/* KMS is not known by this layer */
 	return 0; /* layers below have to fill in the rest */
 }
@@ -100,11 +100,17 @@ static int vvp_attr_set(const struct lu_env *env, struct cl_object *obj,
 			const struct cl_attr *attr, unsigned valid)
 {
 	struct inode *inode = ccc_object_inode(obj);
+	kuid_t kuid;
+	kgid_t kgid;
 
-	if (valid & CAT_UID)
-		inode->i_uid = make_kuid(&init_user_ns, attr->cat_uid);
-	if (valid & CAT_GID)
-		inode->i_gid = make_kgid(&init_user_ns, attr->cat_gid);
+	if (valid & CAT_UID) {
+		kuid = make_kuid(&init_user_ns, attr->cat_uid);
+		inode->i_uid = KUID_TO_VUID(kuid);
+	}
+	if (valid & CAT_GID) {
+		kgid = make_kgid(&init_user_ns, attr->cat_gid);
+		inode->i_gid = KGID_TO_VGID(kgid);
+	}
 	if (valid & CAT_ATIME)
 		inode->i_atime.tv_sec = attr->cat_atime;
 	if (valid & CAT_MTIME)

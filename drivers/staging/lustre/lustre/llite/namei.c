@@ -278,8 +278,8 @@ int ll_md_blocking_ast(struct ldlm_lock *lock, struct ldlm_lock_desc *desc,
 
 __u32 ll_i2suppgid(struct inode *i)
 {
-	if (in_group_p(i->i_gid))
-		return (__u32)from_kgid(&init_user_ns, i->i_gid);
+	if (in_group_p(VGID_TO_KGID(i->i_gid)))
+		return (__u32)from_kgid(&init_user_ns, VGID_TO_KGID(i->i_gid));
 	else
 		return (__u32)(-1);
 }

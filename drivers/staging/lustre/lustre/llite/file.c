@@ -3000,8 +3000,8 @@ int ll_getattr(struct vfsmount *mnt, struct dentry *de, struct kstat *stat)
 		stat->ino = inode->i_ino;
 	stat->mode = inode->i_mode;
 	stat->nlink = inode->i_nlink;
-	stat->uid = inode->i_uid;
-	stat->gid = inode->i_gid;
+	stat->uid = VUID_TO_KUID(inode->i_uid);
+	stat->gid = VGID_TO_KGID(inode->i_gid);
 	stat->rdev = inode->i_rdev;
 	stat->atime = inode->i_atime;
 	stat->mtime = inode->i_mtime;

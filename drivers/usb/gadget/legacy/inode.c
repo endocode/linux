@@ -1917,12 +1917,16 @@ gadgetfs_make_inode (struct super_block *sb,
 		int mode)
 {
 	struct inode *inode = new_inode (sb);
+	kuid_t kuid;
+	kgid_t kgid;
 
 	if (inode) {
 		inode->i_ino = get_next_ino();
 		inode->i_mode = mode;
-		inode->i_uid = make_kuid(&init_user_ns, default_uid);
-		inode->i_gid = make_kgid(&init_user_ns, default_gid);
+		kuid = make_kuid(&init_user_ns, default_uid);
+		inode->i_uid = KUID_TO_VUID(kuid);
+		kgid = make_kgid(&init_user_ns, default_gid);
+		inode->i_gid = KGID_TO_VGID(kgid);
 		inode->i_atime = inode->i_mtime = inode->i_ctime
 				= CURRENT_TIME;
 		inode->i_private = data;
