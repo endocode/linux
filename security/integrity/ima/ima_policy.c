@@ -242,7 +242,8 @@ static bool ima_match_rules(struct ima_rule_entry *rule,
 			return false;
 	}
 
-	if ((rule->flags & IMA_FOWNER) && !uid_eq(rule->fowner, inode->i_uid))
+	if ((rule->flags & IMA_FOWNER) &&
+			!uid_eq(rule->fowner, VUID_TO_KUID(inode->i_uid)))
 		return false;
 	for (i = 0; i < MAX_LSM_RULES; i++) {
 		int rc = 0;

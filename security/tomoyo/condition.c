@@ -717,8 +717,8 @@ void tomoyo_get_attributes(struct tomoyo_obj_info *obj)
 		inode = d_backing_inode(dentry);
 		if (inode) {
 			struct tomoyo_mini_stat *stat = &obj->stat[i];
-			stat->uid  = inode->i_uid;
-			stat->gid  = inode->i_gid;
+			stat->uid  = VUID_TO_KUID(inode->i_uid);
+			stat->gid  = VGID_TO_KGID(inode->i_gid);
 			stat->ino  = inode->i_ino;
 			stat->mode = inode->i_mode;
 			stat->dev  = inode->i_sb->s_dev;

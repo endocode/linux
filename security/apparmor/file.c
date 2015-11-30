@@ -351,7 +351,7 @@ int aa_path_link(struct aa_profile *profile, struct dentry *old_dentry,
 	struct path link = { new_dir->mnt, new_dentry };
 	struct path target = { new_dir->mnt, old_dentry };
 	struct path_cond cond = {
-		d_backing_inode(old_dentry)->i_uid,
+		VUID_TO_KUID(d_backing_inode(old_dentry)->i_uid),
 		d_backing_inode(old_dentry)->i_mode
 	};
 	char *buffer = NULL, *buffer2 = NULL;
@@ -449,7 +449,7 @@ int aa_file_perm(int op, struct aa_profile *profile, struct file *file,
 		 u32 request)
 {
 	struct path_cond cond = {
-		.uid = file_inode(file)->i_uid,
+		.uid = VUID_TO_KUID(file_inode(file)->i_uid),
 		.mode = file_inode(file)->i_mode
 	};
 

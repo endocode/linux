@@ -343,7 +343,7 @@ int apparmor_bprm_set_creds(struct linux_binprm *bprm)
 	unsigned int state;
 	struct file_perms perms = {};
 	struct path_cond cond = {
-		file_inode(bprm->file)->i_uid,
+		VUID_TO_KUID(file_inode(bprm->file)->i_uid),
 		file_inode(bprm->file)->i_mode
 	};
 	const char *name = NULL, *target = NULL, *info = NULL;
