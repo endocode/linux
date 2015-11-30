@@ -194,8 +194,9 @@ static int common_perm_mnt_dentry(int op, struct vfsmount *mnt,
 				  struct dentry *dentry, u32 mask)
 {
 	struct path path = { mnt, dentry };
-	struct path_cond cond = { d_backing_inode(dentry)->i_uid,
-				  d_backing_inode(dentry)->i_mode
+	struct path_cond cond = {
+		VUID_TO_KUID(d_backing_inode(dentry)->i_uid),
+		d_backing_inode(dentry)->i_mode
 	};
 
 	return common_perm(op, &path, mask, &cond);
@@ -219,7 +220,7 @@ static int common_perm_rm(int op, struct path *dir,
 	if (!inode || !dir->mnt || !mediated_filesystem(dentry))
 		return 0;
 
-	cond.uid = inode->i_uid;
+	cond.uid = VUID_TO_KUID(inode->i_uid);
 	cond.mode = inode->i_mode;
 
 	return common_perm_dir_dentry(op, dir, dentry, mask, &cond);
@@ -271,8 +272,9 @@ static int apparmor_path_mknod(struct path *dir, struct dentry *dentry,
 
 static int apparmor_path_truncate(struct path *path)
 {
-	struct path_cond cond = { d_backing_inode(path->dentry)->i_uid,
-				  d_backing_inode(path->dentry)->i_mode
+	struct path_cond cond = {
+		VUID_TO_KUID(d_backing_inode(path->dentry)->i_uid),
+		d_backing_inode(path->dentry)->i_mode
 	};
 
 	if (!path->mnt || !mediated_filesystem(path->dentry))
@@ -317,8 +319,9 @@ static int apparmor_path_rename(struct path *old_dir, struct dentry *old_dentry,
 	if (!unconfined(profile)) {
 		struct path old_path = { old_dir->mnt, old_dentry };
 		struct path new_path = { new_dir->mnt, new_dentry };
-		struct path_cond cond = { d_backing_inode(old_dentry)->i_uid,
-					  d_backing_inode(old_dentry)->i_mode
+		struct path_cond cond = {
+			VUID_TO_KUID(d_backing_inode(old_dentry)->i_uid),
+			d_backing_inode(old_dentry)->i_mode
 		};
 
 		error = aa_path_perm(OP_RENAME_SRC, profile, &old_path, 0,
@@ -344,8 +347,9 @@ static int apparmor_path_chmod(struct path *path, umode_t mode)
 
 static int apparmor_path_chown(struct path *path, kuid_t uid, kgid_t gid)
 {
-	struct path_cond cond =  { d_backing_inode(path->dentry)->i_uid,
-				   d_backing_inode(path->dentry)->i_mode
+	struct path_cond cond =  {
+		VUID_TO_KUID(d_backing_inode(path->dentry)->i_uid),
+		d_backing_inode(path->dentry)->i_mode
 	};
 
 	if (!mediated_filesystem(path->dentry))
@@ -385,7 +389,8 @@ static int apparmor_file_open(struct file *file, const struct cred *cred)
 	profile = aa_cred_profile(cred);
 	if (!unconfined(profile)) {
 		struct inode *inode = file_inode(file);
-		struct path_cond cond = { inode->i_uid, inode->i_mode };
+		struct path_cond cond = {
+			VUID_TO_KUID(inode->i_uid), inode->i_mode };
 
 		error = aa_path_perm(OP_OPEN, profile, &file->f_path, 0,
 				     aa_map_file_to_perms(file), &cond);
