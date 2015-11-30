@@ -78,6 +78,10 @@ static const base_filesystem fs_table[] = {
 
 static const mount_point mnt_table[] = {
 	{
+		"/", "/", NULL, "vfs_uidshift=1",
+		MS_BIND|MS_REC, false, true, true,
+	},
+	{
 		"/proc", "/proc", "proc", NULL,
 		MS_NOSUID|MS_NOEXEC|MS_NODEV, true, true, true,
 	},
