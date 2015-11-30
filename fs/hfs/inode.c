@@ -190,8 +190,8 @@ struct inode *hfs_new_inode(struct inode *dir, struct qstr *name, umode_t mode)
 	hfs_cat_build_key(sb, (btree_key *)&HFS_I(inode)->cat_key, dir->i_ino, name);
 	inode->i_ino = HFS_SB(sb)->next_id++;
 	inode->i_mode = mode;
-	inode->i_uid = current_fsuid();
-	inode->i_gid = current_fsgid();
+	inode->i_uid = KUID_TO_VUID(current_fsuid());
+	inode->i_gid = KGID_TO_VGID(current_fsgid());
 	set_nlink(inode, 1);
 	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME_SEC;
 	HFS_I(inode)->flags = 0;
@@ -320,8 +320,8 @@ static int hfs_read_inode(struct inode *inode, void *data)
 	INIT_LIST_HEAD(&HFS_I(inode)->open_dir_list);
 
 	/* Initialize the inode */
-	inode->i_uid = hsb->s_uid;
-	inode->i_gid = hsb->s_gid;
+	inode->i_uid = KUID_TO_VUID(hsb->s_uid);
+	inode->i_gid = KGID_TO_VGID(hsb->s_gid);
 	set_nlink(inode, 1);
 
 	if (idata->key)

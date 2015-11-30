@@ -222,8 +222,8 @@ struct inode *omfs_iget(struct super_block *sb, ino_t ino)
 	if (ino != be64_to_cpu(oi->i_head.h_self))
 		goto fail_bh;
 
-	inode->i_uid = sbi->s_uid;
-	inode->i_gid = sbi->s_gid;
+	inode->i_uid = KUID_TO_VUID(sbi->s_uid);
+	inode->i_gid = KGID_TO_VGID(sbi->s_gid);
 
 	ctime = be64_to_cpu(oi->i_ctime);
 	nsecs = do_div(ctime, 1000) * 1000L;

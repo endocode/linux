@@ -920,7 +920,9 @@ int fuse_update_attributes(struct inode *inode, struct kstat *stat,
 		r = false;
 		err = 0;
 		if (stat) {
-			generic_fillattr(mnt, inode, stat);
+			/* FIXME: we need to find out a better way of passing
+			 * a (vfsmount *)mnt to generic_fillattr(). */
+			generic_fillattr(NULL, inode, stat);
 			stat->mode = fi->orig_i_mode;
 			stat->ino = fi->orig_ino;
 		}

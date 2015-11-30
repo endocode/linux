@@ -15,8 +15,8 @@ void hpfs_init_inode(struct inode *i)
 	struct super_block *sb = i->i_sb;
 	struct hpfs_inode_info *hpfs_inode = hpfs_i(i);
 
-	i->i_uid = hpfs_sb(sb)->sb_uid;
-	i->i_gid = hpfs_sb(sb)->sb_gid;
+	i->i_uid = KUID_TO_VUID(hpfs_sb(sb)->sb_uid);
+	i->i_gid = KGID_TO_VGID(hpfs_sb(sb)->sb_gid);
 	i->i_mode = hpfs_sb(sb)->sb_mode;
 	i->i_size = -1;
 	i->i_blocks = -1;
@@ -150,12 +150,12 @@ static void hpfs_write_inode_ea(struct inode *i, struct fnode *fnode)
 		hpfs_error(i->i_sb, "fnode %08x has some unknown HPFS386 structures", i->i_ino);
 	} else*/ if (hpfs_sb(i->i_sb)->sb_eas >= 2) {
 		__le32 ea;
-		if (!uid_eq(i->i_uid, hpfs_sb(i->i_sb)->sb_uid) || hpfs_inode->i_ea_uid) {
+		if (!uid_eq(VUID_TO_KUID(i->i_uid), hpfs_sb(i->i_sb)->sb_uid) || hpfs_inode->i_ea_uid) {
 			ea = cpu_to_le32(i_uid_read(i));
 			hpfs_set_ea(i, fnode, "UID", (char*)&ea, 2);
 			hpfs_inode->i_ea_uid = 1;
 		}
-		if (!gid_eq(i->i_gid, hpfs_sb(i->i_sb)->sb_gid) || hpfs_inode->i_ea_gid) {
+		if (!gid_eq(VGID_TO_KGID(i->i_gid), hpfs_sb(i->i_sb)->sb_gid) || hpfs_inode->i_ea_gid) {
 			ea = cpu_to_le32(i_gid_read(i));
 			hpfs_set_ea(i, fnode, "GID", (char *)&ea, 2);
 			hpfs_inode->i_ea_gid = 1;

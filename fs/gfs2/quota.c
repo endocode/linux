@@ -548,20 +548,22 @@ int gfs2_quota_hold(struct gfs2_inode *ip, kuid_t uid, kgid_t gid)
 	if (sdp->sd_args.ar_quota == GFS2_QUOTA_OFF)
 		return 0;
 
-	error = qdsb_get(sdp, make_kqid_uid(ip->i_inode.i_uid), qd);
+	error = qdsb_get(sdp, make_kqid_uid(VUID_TO_KUID(ip->i_inode.i_uid)),
+			 qd);
 	if (error)
 		goto out;
 	ip->i_res->rs_qa_qd_num++;
 	qd++;
 
-	error = qdsb_get(sdp, make_kqid_gid(ip->i_inode.i_gid), qd);
+	error = qdsb_get(sdp, make_kqid_gid(VGID_TO_KGID(ip->i_inode.i_gid)),
+			 qd);
 	if (error)
 		goto out;
 	ip->i_res->rs_qa_qd_num++;
 	qd++;
 
 	if (!uid_eq(uid, NO_UID_QUOTA_CHANGE) &&
-	    !uid_eq(uid, ip->i_inode.i_uid)) {
+	    !uid_eq(uid, VUID_TO_KUID(ip->i_inode.i_uid))) {
 		error = qdsb_get(sdp, make_kqid_uid(uid), qd);
 		if (error)
 			goto out;
@@ -570,7 +572,7 @@ int gfs2_quota_hold(struct gfs2_inode *ip, kuid_t uid, kgid_t gid)
 	}
 
 	if (!gid_eq(gid, NO_GID_QUOTA_CHANGE) &&
-	    !gid_eq(gid, ip->i_inode.i_gid)) {
+	    !gid_eq(gid, VGID_TO_KGID(ip->i_inode.i_gid))) {
 		error = qdsb_get(sdp, make_kqid_gid(gid), qd);
 		if (error)
 			goto out;

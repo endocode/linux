@@ -302,6 +302,8 @@ static struct inode *befs_iget(struct super_block *sb, unsigned long ino)
 	struct befs_inode_info *befs_ino = NULL;
 	struct inode *inode;
 	long ret = -EIO;
+	kuid_t kuid;
+	kgid_t kgid;
 
 	befs_debug(sb, "---> %s inode = %lu", __func__, ino);
 
@@ -343,12 +345,13 @@ static struct inode *befs_iget(struct super_block *sb, unsigned long ino)
 	 * you can change by "uid" or "gid" options.
 	 */   
 
+	kuid = make_kuid(&init_user_ns, fs32_to_cpu(sb, raw_inode->uid));
+	kgid = make_kgid(&init_user_ns, fs32_to_cpu(sb, raw_inode->gid));
+
 	inode->i_uid = befs_sb->mount_opts.use_uid ?
-		befs_sb->mount_opts.uid :
-		make_kuid(&init_user_ns, fs32_to_cpu(sb, raw_inode->uid));
+		KUID_TO_VUID(befs_sb->mount_opts.uid) : KUID_TO_VUID(kuid);
 	inode->i_gid = befs_sb->mount_opts.use_gid ?
-		befs_sb->mount_opts.gid :
-		make_kgid(&init_user_ns, fs32_to_cpu(sb, raw_inode->gid));
+		KGID_TO_VGID(befs_sb->mount_opts.gid) : KGID_TO_VGID(kgid);
 
 	set_nlink(inode, 1);
 

@@ -100,8 +100,8 @@ int nfsacl_encode(struct xdr_buf *buf, unsigned int base, struct inode *inode,
 		},
 		.acl = acl,
 		.typeflag = typeflag,
-		.uid = inode->i_uid,
-		.gid = inode->i_gid,
+		.uid = VUID_TO_KUID(inode->i_uid),
+		.gid = VGID_TO_KGID(inode->i_gid),
 	};
 	struct nfsacl_simple_acl aclbuf;
 	int err;

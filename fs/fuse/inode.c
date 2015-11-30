@@ -159,6 +159,8 @@ void fuse_change_attributes_common(struct inode *inode, struct fuse_attr *attr,
 {
 	struct fuse_conn *fc = get_fuse_conn(inode);
 	struct fuse_inode *fi = get_fuse_inode(inode);
+	kuid_t kuid;
+	kgid_t kgid;
 
 	fi->attr_version = ++fc->attr_version;
 	fi->i_time = attr_valid;
@@ -166,8 +168,10 @@ void fuse_change_attributes_common(struct inode *inode, struct fuse_attr *attr,
 	inode->i_ino     = fuse_squash_ino(attr->ino);
 	inode->i_mode    = (inode->i_mode & S_IFMT) | (attr->mode & 07777);
 	set_nlink(inode, attr->nlink);
-	inode->i_uid     = make_kuid(&init_user_ns, attr->uid);
-	inode->i_gid     = make_kgid(&init_user_ns, attr->gid);
+	kuid             = make_kuid(&init_user_ns, attr->uid);
+	inode->i_uid     = KUID_TO_VUID(kuid);
+	kgid             = make_kgid(&init_user_ns, attr->gid);
+	inode->i_gid     = KGID_TO_VGID(kgid);
 	inode->i_blocks  = attr->blocks;
 	inode->i_atime.tv_sec   = attr->atime;
 	inode->i_atime.tv_nsec  = attr->atimensec;
