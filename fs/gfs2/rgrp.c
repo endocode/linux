@@ -2403,7 +2403,8 @@ int gfs2_alloc_blocks(struct gfs2_inode *ip, u64 *bn, unsigned int *nblocks,
 	if (dinode)
 		gfs2_trans_add_unrevoke(sdp, block, *nblocks);
 
-	gfs2_quota_change(ip, *nblocks, ip->i_inode.i_uid, ip->i_inode.i_gid);
+	gfs2_quota_change(ip, *nblocks, VUID_TO_KUID(ip->i_inode.i_uid),
+			  VGID_TO_KGID(ip->i_inode.i_gid));
 
 	rbm.rgd->rd_free_clone -= *nblocks;
 	trace_gfs2_block_alloc(ip, rbm.rgd, block, *nblocks,
@@ -2459,7 +2460,8 @@ void gfs2_free_meta(struct gfs2_inode *ip, u64 bstart, u32 blen)
 
 	__gfs2_free_blocks(ip, bstart, blen, 1);
 	gfs2_statfs_change(sdp, 0, +blen, 0);
-	gfs2_quota_change(ip, -(s64)blen, ip->i_inode.i_uid, ip->i_inode.i_gid);
+	gfs2_quota_change(ip, -(s64)blen, VUID_TO_KUID(ip->i_inode.i_uid),
+			  VGID_TO_KGID(ip->i_inode.i_gid));
 }
 
 void gfs2_unlink_di(struct inode *inode)
@@ -2507,7 +2509,8 @@ void gfs2_free_di(struct gfs2_rgrpd *rgd, struct gfs2_inode *ip)
 {
 	gfs2_free_uninit_di(rgd, ip->i_no_addr);
 	trace_gfs2_block_alloc(ip, rgd, ip->i_no_addr, 1, GFS2_BLKST_FREE);
-	gfs2_quota_change(ip, -1, ip->i_inode.i_uid, ip->i_inode.i_gid);
+	gfs2_quota_change(ip, -1, VUID_TO_KUID(ip->i_inode.i_uid),
+			  VGID_TO_KGID(ip->i_inode.i_gid));
 	gfs2_meta_wipe(ip, ip->i_no_addr, 1);
 }
 

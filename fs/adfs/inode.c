@@ -248,8 +248,8 @@ adfs_iget(struct super_block *sb, struct object_info *obj)
 	if (!inode)
 		goto out;
 
-	inode->i_uid	 = ADFS_SB(sb)->s_uid;
-	inode->i_gid	 = ADFS_SB(sb)->s_gid;
+	inode->i_uid	 = KUID_TO_VUID(ADFS_SB(sb)->s_uid);
+	inode->i_gid	 = KGID_TO_VGID(ADFS_SB(sb)->s_gid);
 	inode->i_ino	 = obj->file_id;
 	inode->i_size	 = obj->size;
 	set_nlink(inode, 2);

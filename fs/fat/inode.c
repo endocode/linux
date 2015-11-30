@@ -456,8 +456,8 @@ int fat_fill_inode(struct inode *inode, struct msdos_dir_entry *de)
 	int error;
 
 	MSDOS_I(inode)->i_pos = 0;
-	inode->i_uid = sbi->options.fs_uid;
-	inode->i_gid = sbi->options.fs_gid;
+	inode->i_uid = KUID_TO_VUID(sbi->options.fs_uid);
+	inode->i_gid = KGID_TO_VGID(sbi->options.fs_gid);
 	inode->i_version++;
 	inode->i_generation = get_seconds();
 
@@ -1275,8 +1275,8 @@ static int fat_read_root(struct inode *inode)
 	int error;
 
 	MSDOS_I(inode)->i_pos = MSDOS_ROOT_INO;
-	inode->i_uid = sbi->options.fs_uid;
-	inode->i_gid = sbi->options.fs_gid;
+	inode->i_uid = KUID_TO_VUID(sbi->options.fs_uid);
+	inode->i_gid = KGID_TO_VGID(sbi->options.fs_gid);
 	inode->i_version++;
 	inode->i_generation = 0;
 	inode->i_mode = fat_make_mode(sbi, ATTR_DIR, S_IRWXUGO);

@@ -1050,8 +1050,8 @@ static bool load_and_init_mft_mirror(ntfs_volume *vol)
 	 * ntfs_read_inode() will have set up the default ones.
 	 */
 	/* Set uid and gid to root. */
-	tmp_ino->i_uid = GLOBAL_ROOT_UID;
-	tmp_ino->i_gid = GLOBAL_ROOT_GID;
+	tmp_ino->i_uid = KUID_TO_VUID(GLOBAL_ROOT_UID);
+	tmp_ino->i_gid = KGID_TO_VGID(GLOBAL_ROOT_GID);
 	/* Regular file.  No access for anyone. */
 	tmp_ino->i_mode = S_IFREG;
 	/* No VFS initiated operations allowed for $MFTMirr. */

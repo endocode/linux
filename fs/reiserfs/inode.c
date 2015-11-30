@@ -3375,8 +3375,8 @@ int reiserfs_setattr(struct dentry *dentry, struct iattr *attr)
 		goto out;
 	}
 
-	if ((ia_valid & ATTR_UID && !uid_eq(attr->ia_uid, inode->i_uid)) ||
-	    (ia_valid & ATTR_GID && !gid_eq(attr->ia_gid, inode->i_gid))) {
+	if ((ia_valid & ATTR_UID && !uid_eq(attr->ia_uid, VUID_TO_KUID(inode->i_uid))) ||
+	    (ia_valid & ATTR_GID && !gid_eq(attr->ia_gid, VGID_TO_KGID(inode->i_gid)))) {
 		struct reiserfs_transaction_handle th;
 		int jbegin_count =
 		    2 *
@@ -3411,9 +3411,9 @@ int reiserfs_setattr(struct dentry *dentry, struct iattr *attr)
 		 * is in one transaction
 		 */
 		if (attr->ia_valid & ATTR_UID)
-			inode->i_uid = attr->ia_uid;
+			inode->i_uid = KUID_TO_VUID(attr->ia_uid);
 		if (attr->ia_valid & ATTR_GID)
-			inode->i_gid = attr->ia_gid;
+			inode->i_gid = KGID_TO_VGID(attr->ia_gid);
 		mark_inode_dirty(inode);
 		error = journal_end(&th);
 		reiserfs_write_unlock(inode->i_sb);

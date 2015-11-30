@@ -103,8 +103,8 @@ struct inode *ialloc(struct inode *parent, umode_t mode)
 	 * New inodes need to save sane values on disk when
 	 * uid & gid mount options are used
 	 */
-	jfs_inode->saved_uid = inode->i_uid;
-	jfs_inode->saved_gid = inode->i_gid;
+	jfs_inode->saved_uid = VUID_TO_KUID(inode->i_uid);
+	jfs_inode->saved_gid = VGID_TO_KGID(inode->i_gid);
 
 	/*
 	 * Allocate inode to quota.

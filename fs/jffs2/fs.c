@@ -381,8 +381,8 @@ void jffs2_dirty_inode(struct inode *inode, int flags)
 
 	iattr.ia_valid = ATTR_MODE|ATTR_UID|ATTR_GID|ATTR_ATIME|ATTR_MTIME|ATTR_CTIME;
 	iattr.ia_mode = inode->i_mode;
-	iattr.ia_uid = inode->i_uid;
-	iattr.ia_gid = inode->i_gid;
+	iattr.ia_uid = VUID_TO_KUID(inode->i_uid);
+	iattr.ia_gid = VGID_TO_KGID(inode->i_gid);
 	iattr.ia_atime = inode->i_atime;
 	iattr.ia_mtime = inode->i_mtime;
 	iattr.ia_ctime = inode->i_ctime;

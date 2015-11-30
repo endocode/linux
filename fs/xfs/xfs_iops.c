@@ -456,8 +456,8 @@ xfs_vn_getattr(
 	stat->dev = inode->i_sb->s_dev;
 	stat->mode = ip->i_d.di_mode;
 	stat->nlink = ip->i_d.di_nlink;
-	stat->uid = inode->i_uid;
-	stat->gid = inode->i_gid;
+	stat->uid = VUID_TO_KUID(inode->i_uid);
+	stat->gid = VGID_TO_KGID(inode->i_gid);
 	stat->ino = ip->i_ino;
 	stat->atime = inode->i_atime;
 	stat->mtime = inode->i_mtime;
@@ -582,13 +582,13 @@ xfs_setattr_nonsize(
 			uid = iattr->ia_uid;
 			qflags |= XFS_QMOPT_UQUOTA;
 		} else {
-			uid = inode->i_uid;
+			uid = VUID_TO_KUID(inode->i_uid);
 		}
 		if ((mask & ATTR_GID) && XFS_IS_GQUOTA_ON(mp)) {
 			gid = iattr->ia_gid;
 			qflags |= XFS_QMOPT_GQUOTA;
 		}  else {
-			gid = inode->i_gid;
+			gid = VGID_TO_KGID(inode->i_gid);
 		}
 
 		/*
@@ -623,8 +623,8 @@ xfs_setattr_nonsize(
 		 * while we didn't have the inode locked, inode's dquot(s)
 		 * would have changed also.
 		 */
-		iuid = inode->i_uid;
-		igid = inode->i_gid;
+		iuid = VUID_TO_KUID(inode->i_uid);
+		igid = VGID_TO_KGID(inode->i_gid);
 		gid = (mask & ATTR_GID) ? iattr->ia_gid : igid;
 		uid = (mask & ATTR_UID) ? iattr->ia_uid : iuid;
 
@@ -672,7 +672,7 @@ xfs_setattr_nonsize(
 							&ip->i_udquot, udqp);
 			}
 			ip->i_d.di_uid = xfs_kuid_to_uid(uid);
-			inode->i_uid = uid;
+			inode->i_uid = KUID_TO_VUID(uid);
 		}
 		if (!gid_eq(igid, gid)) {
 			if (XFS_IS_QUOTA_RUNNING(mp) && XFS_IS_GQUOTA_ON(mp)) {
@@ -684,7 +684,7 @@ xfs_setattr_nonsize(
 							&ip->i_gdquot, gdqp);
 			}
 			ip->i_d.di_gid = xfs_kgid_to_gid(gid);
-			inode->i_gid = gid;
+			inode->i_gid = KGID_TO_VGID(gid);
 		}
 	}
 
@@ -1220,6 +1220,8 @@ xfs_setup_inode(
 {
 	struct inode		*inode = &ip->i_vnode;
 	gfp_t			gfp_mask;
+	kuid_t			kuid;
+	kgid_t			kgid;
 
 	inode->i_ino = ip->i_ino;
 	inode->i_state = I_NEW;
@@ -1230,8 +1232,10 @@ xfs_setup_inode(
 
 	inode->i_mode	= ip->i_d.di_mode;
 	set_nlink(inode, ip->i_d.di_nlink);
-	inode->i_uid    = xfs_uid_to_kuid(ip->i_d.di_uid);
-	inode->i_gid    = xfs_gid_to_kgid(ip->i_d.di_gid);
+	kuid		= xfs_uid_to_kuid(ip->i_d.di_uid);
+	inode->i_uid    = KUID_TO_VUID(kuid);
+	kgid		= xfs_gid_to_kgid(ip->i_d.di_gid);
+	inode->i_gid    = KGID_TO_VGID(kgid);
 
 	switch (inode->i_mode & S_IFMT) {
 	case S_IFBLK:

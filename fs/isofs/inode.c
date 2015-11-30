@@ -1314,8 +1314,8 @@ static int isofs_read_inode(struct inode *inode, int relocated)
 		}
 		set_nlink(inode, 1);
 	}
-	inode->i_uid = sbi->s_uid;
-	inode->i_gid = sbi->s_gid;
+	inode->i_uid = KUID_TO_VUID(sbi->s_uid);
+	inode->i_gid = KGID_TO_VGID(sbi->s_gid);
 	inode->i_blocks = 0;
 
 	ei->i_format_parm[0] = 0;
@@ -1387,9 +1387,9 @@ static int isofs_read_inode(struct inode *inode, int relocated)
 		parse_rock_ridge_inode(de, inode, relocated);
 		/* if we want uid/gid set, override the rock ridge setting */
 		if (sbi->s_uid_set)
-			inode->i_uid = sbi->s_uid;
+			inode->i_uid = KUID_TO_VUID(sbi->s_uid);
 		if (sbi->s_gid_set)
-			inode->i_gid = sbi->s_gid;
+			inode->i_gid = KGID_TO_VGID(sbi->s_gid);
 	}
 	/* Now set final access rights if overriding rock ridge setting */
 	if (S_ISDIR(inode->i_mode) && sbi->s_overriderockperm &&

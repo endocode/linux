@@ -359,21 +359,22 @@ static void munge_mode_uid_gid(const struct gfs2_inode *dip,
 {
 	if (GFS2_SB(&dip->i_inode)->sd_args.ar_suiddir &&
 	    (dip->i_inode.i_mode & S_ISUID) &&
-	    !uid_eq(dip->i_inode.i_uid, GLOBAL_ROOT_UID)) {
+	    !uid_eq(VUID_TO_KUID(dip->i_inode.i_uid), GLOBAL_ROOT_UID)) {
 		if (S_ISDIR(inode->i_mode))
 			inode->i_mode |= S_ISUID;
-		else if (!uid_eq(dip->i_inode.i_uid, current_fsuid()))
+		else if (!uid_eq(VUID_TO_KUID(dip->i_inode.i_uid),
+				 current_fsuid()))
 			inode->i_mode &= ~07111;
-		inode->i_uid = dip->i_inode.i_uid;
+		inode->i_uid = KUID_TO_VUID(dip->i_inode.i_uid);
 	} else
-		inode->i_uid = current_fsuid();
+		inode->i_uid = KUID_TO_VUID(current_fsuid());
 
 	if (dip->i_inode.i_mode & S_ISGID) {
 		if (S_ISDIR(inode->i_mode))
 			inode->i_mode |= S_ISGID;
-		inode->i_gid = dip->i_inode.i_gid;
+		inode->i_gid = KGID_TO_VGID(dip->i_inode.i_gid);
 	} else
-		inode->i_gid = current_fsgid();
+		inode->i_gid = KGID_TO_VGID(current_fsgid());
 }
 
 static int alloc_dinode(struct gfs2_inode *ip, u32 flags, unsigned *dblocks)
@@ -1026,8 +1027,8 @@ static int gfs2_unlink_ok(struct gfs2_inode *dip, const struct qstr *name,
 		return -EPERM;
 
 	if ((dip->i_inode.i_mode & S_ISVTX) &&
-	    !uid_eq(dip->i_inode.i_uid, current_fsuid()) &&
-	    !uid_eq(ip->i_inode.i_uid, current_fsuid()) && !capable(CAP_FOWNER))
+	    !uid_eq(VUID_TO_KUID(dip->i_inode.i_uid), current_fsuid()) &&
+	    !uid_eq(VUID_TO_KUID(ip->i_inode.i_uid), current_fsuid()) && !capable(CAP_FOWNER))
 		return -EPERM;
 
 	if (IS_APPEND(&dip->i_inode))
@@ -1844,8 +1845,8 @@ static int setattr_chown(struct inode *inode, struct iattr *attr)
 	int error;
 	struct gfs2_alloc_parms ap;
 
-	ouid = inode->i_uid;
-	ogid = inode->i_gid;
+	ouid = VUID_TO_KUID(inode->i_uid);
+	ogid = VGID_TO_KGID(inode->i_gid);
 	nuid = attr->ia_uid;
 	ngid = attr->ia_gid;
 

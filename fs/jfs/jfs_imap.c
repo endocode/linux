@@ -3069,16 +3069,16 @@ static int copy_from_dinode(struct dinode * dip, struct inode *ip)
 
 	jfs_ip->saved_uid = make_kuid(&init_user_ns, le32_to_cpu(dip->di_uid));
 	if (!uid_valid(sbi->uid))
-		ip->i_uid = jfs_ip->saved_uid;
+		ip->i_uid = KUID_TO_VUID(jfs_ip->saved_uid);
 	else {
-		ip->i_uid = sbi->uid;
+		ip->i_uid = KUID_TO_VUID(sbi->uid);
 	}
 
 	jfs_ip->saved_gid = make_kgid(&init_user_ns, le32_to_cpu(dip->di_gid));
 	if (!gid_valid(sbi->gid))
-		ip->i_gid = jfs_ip->saved_gid;
+		ip->i_gid = KGID_TO_VGID(jfs_ip->saved_gid);
 	else {
-		ip->i_gid = sbi->gid;
+		ip->i_gid = KGID_TO_VGID(sbi->gid);
 	}
 
 	ip->i_size = le64_to_cpu(dip->di_size);

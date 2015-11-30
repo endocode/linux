@@ -352,7 +352,7 @@ cifs_do_create(struct inode *inode, struct dentry *direntry, unsigned int xid,
 		if (cifs_sb->mnt_cifs_flags & CIFS_MOUNT_SET_UID) {
 			args.uid = current_fsuid();
 			if (inode->i_mode & S_ISGID)
-				args.gid = inode->i_gid;
+				args.gid = VGID_TO_KGID(inode->i_gid);
 			else
 				args.gid = current_fsgid();
 		} else {
@@ -386,11 +386,11 @@ cifs_create_get_file_info:
 				newinode->i_mode = mode;
 			if ((*oplock & CIFS_CREATE_ACTION) &&
 			    (cifs_sb->mnt_cifs_flags & CIFS_MOUNT_SET_UID)) {
-				newinode->i_uid = current_fsuid();
+				newinode->i_uid = KUID_TO_VUID(current_fsuid());
 				if (inode->i_mode & S_ISGID)
 					newinode->i_gid = inode->i_gid;
 				else
-					newinode->i_gid = current_fsgid();
+					newinode->i_gid = KGID_TO_VGID(current_fsgid());
 			}
 		}
 	}

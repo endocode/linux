@@ -234,8 +234,8 @@ static void ncp_set_attr(struct inode *inode, struct ncp_entry_info *nwinfo)
 	ncp_dbg(2, "inode->i_mode = %u\n", inode->i_mode);
 
 	set_nlink(inode, 1);
-	inode->i_uid = server->m.uid;
-	inode->i_gid = server->m.gid;
+	inode->i_uid = KUID_TO_VUID(server->m.uid);
+	inode->i_gid = KGID_TO_VGID(server->m.gid);
 
 	ncp_update_dates(inode, &nwinfo->i);
 	ncp_update_inode(inode, nwinfo);

@@ -73,7 +73,7 @@ struct inode *affs_iget(struct super_block *sb, unsigned long ino)
 
 	id = be16_to_cpu(tail->uid);
 	if (id == 0 || affs_test_opt(sbi->s_flags, SF_SETUID))
-		inode->i_uid = sbi->s_uid;
+		inode->i_uid = KUID_TO_VUID(sbi->s_uid);
 	else if (id == 0xFFFF && affs_test_opt(sbi->s_flags, SF_MUFS))
 		i_uid_write(inode, 0);
 	else
@@ -81,7 +81,7 @@ struct inode *affs_iget(struct super_block *sb, unsigned long ino)
 
 	id = be16_to_cpu(tail->gid);
 	if (id == 0 || affs_test_opt(sbi->s_flags, SF_SETGID))
-		inode->i_gid = sbi->s_gid;
+		inode->i_gid = KGID_TO_VGID(sbi->s_gid);
 	else if (id == 0xFFFF && affs_test_opt(sbi->s_flags, SF_MUFS))
 		i_gid_write(inode, 0);
 	else
@@ -89,8 +89,8 @@ struct inode *affs_iget(struct super_block *sb, unsigned long ino)
 
 	switch (be32_to_cpu(tail->stype)) {
 	case ST_ROOT:
-		inode->i_uid = sbi->s_uid;
-		inode->i_gid = sbi->s_gid;
+		inode->i_uid = KUID_TO_VUID(sbi->s_uid);
+		inode->i_gid = KGID_TO_VGID(sbi->s_gid);
 		/* fall through */
 	case ST_USERDIR:
 		if (be32_to_cpu(tail->stype) == ST_USERDIR ||
@@ -304,8 +304,8 @@ affs_new_inode(struct inode *dir)
 	mark_buffer_dirty_inode(bh, inode);
 	affs_brelse(bh);
 
-	inode->i_uid     = current_fsuid();
-	inode->i_gid     = current_fsgid();
+	inode->i_uid     = KUID_TO_VUID(current_fsuid());
+	inode->i_gid     = KGID_TO_VGID(current_fsgid());
 	inode->i_ino     = block;
 	set_nlink(inode, 1);
 	inode->i_mtime   = inode->i_atime = inode->i_ctime = CURRENT_TIME_SEC;
