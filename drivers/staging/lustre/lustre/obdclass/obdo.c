@@ -100,11 +100,11 @@ void obdo_from_inode(struct obdo *dst, struct inode *src, u32 valid)
 		newvalid |= OBD_MD_FLMODE;
 	}
 	if (valid & OBD_MD_FLUID) {
-		dst->o_uid = from_kuid(&init_user_ns, src->i_uid);
+		dst->o_uid = from_kuid(&init_user_ns, VUID_TO_KUID(src->i_uid));
 		newvalid |= OBD_MD_FLUID;
 	}
 	if (valid & OBD_MD_FLGID) {
-		dst->o_gid = from_kgid(&init_user_ns, src->i_gid);
+		dst->o_gid = from_kgid(&init_user_ns, VGID_TO_KGID(src->i_gid));
 		newvalid |= OBD_MD_FLGID;
 	}
 	if (valid & OBD_MD_FLFLAGS) {
