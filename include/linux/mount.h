@@ -67,7 +67,7 @@ struct mnt_namespace;
 struct vfsmount {
 	struct dentry *mnt_root;	/* root of the mounted tree */
 	struct super_block *mnt_sb;	/* pointer to superblock */
-	struct user_namespace *user_ns; /* pinned user_ns for shifted bind mounts */
+	struct user_namespace *user_ns; /* pinned user_ns for shifted mounts */
 	int mnt_flags;
 };
 
