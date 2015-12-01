@@ -2146,7 +2146,7 @@ static int loopback_parse_options(char *options, int *shift_flag)
  * do loopback mount.
  */
 static int do_loopback(struct path *path, const char *old_name,
-                       int recurse, void *data)
+		       int recurse, void *data)
 {
 	struct path old_path;
 	struct path root;
@@ -2820,7 +2820,8 @@ long do_mount(const char *dev_name, const char __user *dir_name,
 		retval = do_remount(&path, flags & ~MS_REMOUNT, mnt_flags,
 				    data_page);
 	else if (flags & MS_BIND)
-		retval = do_loopback(&path, dev_name, flags & MS_REC, data_page);
+		retval = do_loopback(&path, dev_name, flags & MS_REC,
+				     data_page);
 	else if (flags & (MS_SHARED | MS_PRIVATE | MS_SLAVE
 			  | MS_UNBINDABLE | MS_BIND_SHIFT_UIDGID))
 		retval = do_change_type(&path, flags);

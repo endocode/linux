@@ -797,6 +797,7 @@ static inline gid_t i_gid_read(const struct inode *inode)
 static inline void i_uid_write(struct inode *inode, uid_t uid)
 {
 	kuid_t kuid;
+
 	kuid = make_kuid(&init_user_ns, uid);
 	inode->i_uid = KUID_TO_VUID(kuid);
 }
@@ -804,6 +805,7 @@ static inline void i_uid_write(struct inode *inode, uid_t uid)
 static inline void i_gid_write(struct inode *inode, gid_t gid)
 {
 	kgid_t kgid;
+
 	kgid = make_kgid(&init_user_ns, gid);
 	inode->i_gid = KGID_TO_VGID(kgid);
 }

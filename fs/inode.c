@@ -534,7 +534,7 @@ kgid_t vfs_i_gid_read(const struct inode *inode,
 
 /* Update inode kuid_t from on-disk uid_t */
 void vfs_i_uid_write(struct inode *inode,
-                     const struct vfsmount *mnt, uid_t uid)
+		     const struct vfsmount *mnt, uid_t uid)
 {
 	kuid_t kuid;
 	struct user_namespace *user_ns = &init_user_ns;
@@ -548,7 +548,7 @@ void vfs_i_uid_write(struct inode *inode,
 
 /* Update inode kgid_t from on-disk gid_t */
 void vfs_i_gid_write(struct inode *inode,
-                     const struct vfsmount *mnt, gid_t gid)
+		     const struct vfsmount *mnt, gid_t gid)
 {
 	kgid_t kgid;
 	struct user_namespace *user_ns = &init_user_ns;

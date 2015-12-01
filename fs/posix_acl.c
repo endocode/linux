@@ -328,7 +328,7 @@ posix_acl_permission(struct inode *inode, const struct posix_acl *acl, int want)
                                         goto mask;
 				break;
                         case ACL_GROUP_OBJ:
-                                if (in_group_p(VGID_TO_KGID(inode->i_gid))) {
+				if (in_group_p(VGID_TO_KGID(inode->i_gid))) {
 					found = 1;
 					if ((pa->e_perm & want) == want)
 						goto mask;
